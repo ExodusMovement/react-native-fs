@@ -37,8 +37,6 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 @ReactModule(name = RNFSManager.MODULE_NAME)
 public class RNFSManager extends ReactContextBaseJavaModule {
@@ -148,8 +146,7 @@ public class RNFSManager extends ReactContextBaseJavaModule {
   @ReactMethod
   public void writeFile(String filepath, String base64Content, ReadableMap options, Promise promise) {
     try {
-      byte[] bytes = base64Content.getBytes(Charset.forName("UTF-8"));
-      // byte[] bytes = Base64.decode(base64Content, Base64.DEFAULT);
+      byte[] bytes = Base64.decode(base64Content, Base64.DEFAULT);
 
       OutputStream outputStream = getOutputStream(filepath, false);
       outputStream.write(bytes);
@@ -217,11 +214,9 @@ public class RNFSManager extends ReactContextBaseJavaModule {
     try {
       InputStream inputStream = getInputStream(filepath);
       byte[] inputData = getInputStreamBytes(inputStream);
+      String base64Content = Base64.encodeToString(inputData, Base64.NO_WRAP);
 
-      // String content = Base64.encodeToString(inputData, Base64.NO_WRAP);
-      String content = new String(inputData, StandardCharsets.UTF_8);
-
-      promise.resolve(content);
+      promise.resolve(base64Content);
     } catch (Exception ex) {
       ex.printStackTrace();
       reject(promise, filepath, ex);

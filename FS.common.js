@@ -305,7 +305,7 @@ var RNFS = {
     }
 
     if (options.encoding === 'utf8') {
-      b64 = contents//base64.encode(utf8.encode(contents));
+      b64 = base64.encode(utf8.encode(contents));
     } else if (options.encoding === 'ascii') {
       b64 = base64.encode(contents);
     } else if (options.encoding === 'base64') {
