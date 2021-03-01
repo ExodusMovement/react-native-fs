@@ -186,6 +186,16 @@ export function touch(
 	ctime?: Date
 ): Promise<void>
 
+export function canOpenFile(
+	filepath: string,
+	scheme?: string,
+): Promise<void>
+
+export function openFile(
+	filepath: string,
+	scheme?: string,
+): Promise<void>
+
 export const MainBundlePath: string
 export const CachesDirectoryPath: string
 export const ExternalCachesDirectoryPath: string
