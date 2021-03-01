@@ -186,6 +186,7 @@ export function touch(
 	ctime?: Date
 ): Promise<void>
 
+// not accurate on ios
 export function canOpenFile(
 	filepath: string,
 	scheme?: string,

@@ -399,6 +399,7 @@ var RNFS = {
     );
   },
 
+  // not accurate on ios
   canOpenFile(filepath: string, scheme?: string): Promise<void> {
     return RNFSManager.canOpenFile(
       normalizeFilePath(filepath),
