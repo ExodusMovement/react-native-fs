@@ -680,10 +680,7 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
 
 RCT_EXPORT_METHOD(canOpenFile:(NSString*)uri scheme:(NSString *)scheme resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    NSString * utf8uri = [uri stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    NSURL * url = [[NSURL alloc] initWithString:utf8uri];
-
-    if([[UIApplication sharedApplication] canOpenURL:url] || [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:scheme]]) {
+    if(scheme == nil || [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:scheme]]) {
         resolve(@YES);
     } else {
         resolve(@NO);
@@ -698,7 +695,7 @@ RCT_EXPORT_METHOD(openFile:(NSString*)uri scheme:(NSString *)scheme resolver:(RC
     documentController = [UIDocumentInteractionController interactionControllerWithURL:url];
     documentController.delegate = self;
 
-    if([[UIApplication sharedApplication] canOpenURL:url] || [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:scheme]]) {
+    if(scheme == nil || [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:scheme]]) {
         dispatch_sync(dispatch_get_main_queue(), ^{
             if([documentController presentPreviewAnimated:YES]) {
                 resolve(@[[NSNull null]]);
