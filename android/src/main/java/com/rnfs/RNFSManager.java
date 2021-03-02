@@ -775,7 +775,7 @@ public class RNFSManager extends ReactContextBaseJavaModule {
     intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
       // All the activity to be opened outside of an activity
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    return intent
+    return intent;
   }
 
   @ReactMethod
