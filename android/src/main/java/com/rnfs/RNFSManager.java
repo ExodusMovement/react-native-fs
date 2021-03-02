@@ -17,7 +17,6 @@ import android.net.Uri;
 import android.support.v4.content.FileProvider;
 
 import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
@@ -62,7 +61,6 @@ public class RNFSManager extends ReactContextBaseJavaModule {
   private static final String RNFSFileTypeDirectory = "RNFSFileTypeDirectory";
 
   private ReactApplicationContext reactContext;
-  private static boolean ActionViewVisible = false;
 
 
   public RNFSManager(ReactApplicationContext reactContext) {
@@ -810,25 +808,7 @@ public class RNFSManager extends ReactContextBaseJavaModule {
         this.getReactApplicationContext().startActivity(intent);
       }
 
-      ActionViewVisible = true;
-
-      final LifecycleEventListener listener = new LifecycleEventListener() {
-        @Override
-        public void onHostResume() {
-          if(ActionViewVisible)
-            promise.resolve(null);
-          reactContext.removeLifecycleEventListener(this);
-        }
-
-        @Override
-        public void onHostPause() {
-        }
-
-        @Override
-        public void onHostDestroy() {
-        }
-      };
-      reactContext.addLifecycleEventListener(listener);
+      promise.resolve(null);
     } catch(Exception ex) {
       promise.reject("EUNSPECIFIED", ex.getLocalizedMessage());
     }
