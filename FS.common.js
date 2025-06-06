@@ -1,6 +1,5 @@
 /**
  * React Native FS
- * @flow
  */
 
 'use strict';
@@ -16,48 +15,12 @@ var isIOS = require('react-native').Platform.OS === 'ios';
 var RNFSFileTypeRegular = RNFSManager.RNFSFileTypeRegular;
 var RNFSFileTypeDirectory = RNFSManager.RNFSFileTypeDirectory;
 
-var normalizeFilePath = (path: string) => (path.startsWith('file://') ? path.slice(7) : path);
-
-type MkdirOptions = {
-  NSURLIsExcludedFromBackupKey?: boolean; // iOS only
-  NSFileProtectionKey?: string; // IOS only
-};
-
-type FileOptions = {
-  NSFileProtectionKey?: string; // IOS only
-};
-
-type ReadDirItem = {
-  ctime: ?Date;    // The creation date of the file (iOS only)
-  mtime: ?Date;    // The last modified date of the file
-  name: string;     // The name of the item
-  path: string;     // The absolute path to the item
-  size: string;     // Size in bytes
-  isFile: () => boolean;        // Is the file just a file?
-  isDirectory: () => boolean;   // Is the file a directory?
-};
-
-type StatResult = {
-  name: ?string;     // The name of the item TODO: why is this not documented?
-  path: string;     // The absolute path to the item
-  size: string;     // Size in bytes
-  mode: number;     // UNIX file mode
-  ctime: number;    // Created date
-  mtime: number;    // Last modified date
-  originalFilepath: string;    // In case of content uri this is the pointed file path, otherwise is the same as path
-  isFile: () => boolean;        // Is the file just a file?
-  isDirectory: () => boolean;   // Is the file a directory?
-};
-
-type FSInfoResult = {
-  totalSpace: number;   // The total amount of storage space on the device (in bytes).
-  freeSpace: number;    // The amount of available storage space on the device (in bytes).
-};
+var normalizeFilePath = (path) => (path.startsWith('file://') ? path.slice(7) : path);
 
 /**
  * Generic function used by readFile and readFileAssets
  */
-function readFileGeneric(filepath: string, encodingOrOptions: ?string, command: Function) {
+function readFileGeneric(filepath, encodingOrOptions, command) {
   var options = {
     encoding: 'utf8'
   };
@@ -90,7 +53,7 @@ function readFileGeneric(filepath: string, encodingOrOptions: ?string, command: 
 /**
  * Generic function used by readDir and readDirAssets
  */
-function readDirGeneric(dirpath: string, command: Function) {
+function readDirGeneric(dirpath, command) {
   return command(normalizeFilePath(dirpath)).then(files => {
     return files.map(file => ({
       ctime: file.ctime && new Date(file.ctime * 1000) || null,
@@ -106,48 +69,48 @@ function readDirGeneric(dirpath: string, command: Function) {
 
 var RNFS = {
 
-  mkdir(filepath: string, options: MkdirOptions = {}): Promise<void> {
+  mkdir(filepath, options = {}) {
     return RNFSManager.mkdir(normalizeFilePath(filepath), options).then(() => void 0);
   },
 
-  moveFile(filepath: string, destPath: string, options: FileOptions = {}): Promise<void> {
+  moveFile(filepath, destPath, options = {}) {
     return RNFSManager.moveFile(normalizeFilePath(filepath), normalizeFilePath(destPath), options).then(() => void 0);
   },
 
-  copyFile(filepath: string, destPath: string, options: FileOptions = {}): Promise<void> {
+  copyFile(filepath, destPath, options = {}) {
     return RNFSManager.copyFile(normalizeFilePath(filepath), normalizeFilePath(destPath), options).then(() => void 0);
   },
 
-  pathForBundle(bundleNamed: string): Promise<string> {
+  pathForBundle(bundleNamed) {
     return RNFSManager.pathForBundle(bundleNamed);
   },
 
-  pathForGroup(groupName: string): Promise<string> {
+  pathForGroup(groupName) {
     return RNFSManager.pathForGroup(groupName);
   },
 
-  getFSInfo(): Promise<FSInfoResult> {
+  getFSInfo() {
     return RNFSManager.getFSInfo();
   },
 
-  getAllExternalFilesDirs(): Promise<string> {
+  getAllExternalFilesDirs() {
     return RNFSManager.getAllExternalFilesDirs();
   },
 
-  unlink(filepath: string): Promise<void> {
+  unlink(filepath) {
     return RNFSManager.unlink(normalizeFilePath(filepath)).then(() => void 0);
   },
 
-  exists(filepath: string): Promise<boolean> {
+  exists(filepath) {
     return RNFSManager.exists(normalizeFilePath(filepath));
   },
 
-  readDir(dirpath: string): Promise<ReadDirItem[]> {
+  readDir(dirpath) {
     return readDirGeneric(dirpath, RNFSManager.readDir);
   },
 
   // Android-only
-  readDirAssets(dirpath: string): Promise<ReadDirItem[]> {
+  readDirAssets(dirpath) {
     if (!RNFSManager.readDirAssets) {
       throw new Error('readDirAssets is not available on this platform');
     }
@@ -155,7 +118,7 @@ var RNFS = {
   },
 
   // Android-only
-  existsAssets(filepath: string) {
+  existsAssets(filepath) {
     if (!RNFSManager.existsAssets) {
       throw new Error('existsAssets is not available on this platform');
     }
@@ -163,7 +126,7 @@ var RNFS = {
   },
 
   // Android-only
-  existsRes(filename: string) {
+  existsRes(filename) {
     if (!RNFSManager.existsRes) {
       throw new Error('existsRes is not available on this platform');
     }
@@ -171,20 +134,20 @@ var RNFS = {
   },
 
   // Node style version (lowercase d). Returns just the names
-  readdir(dirpath: string): Promise<string[]> {
+  readdir(dirpath) {
     return RNFS.readDir(normalizeFilePath(dirpath)).then(files => {
       return files.map(file => file.name);
     });
   },
 
   // setReadable for Android
-  setReadable(filepath: string, readable: boolean, ownerOnly: boolean): Promise<boolean> {
+  setReadable(filepath, readable, ownerOnly) {
     return RNFSManager.setReadable(filepath, readable, ownerOnly).then((result) => {
       return result;
     })
   },
 
-  stat(filepath: string): Promise<StatResult> {
+  stat(filepath) {
     return RNFSManager.stat(normalizeFilePath(filepath)).then((result) => {
       return {
         'path': filepath,
@@ -199,15 +162,15 @@ var RNFS = {
     });
   },
 
-  readFile(filepath: string, encodingOrOptions?: any): Promise<string> {
+  readFile(filepath, encodingOrOptions) {
     return readFileGeneric(filepath, encodingOrOptions, RNFSManager.readFile);
   },
 
-  readUtf8(filepath: string): Promise<string> {
+  readUtf8(filepath) {
     return RNFSManager.readUtf8(normalizeFilePath(filepath));
   },
 
-  read(filepath: string, length: number = 0, position: number = 0, encodingOrOptions?: any): Promise<string> {
+  read(filepath, length = 0, position = 0, encodingOrOptions) {
     var options = {
       encoding: 'utf8'
     };
@@ -238,7 +201,7 @@ var RNFS = {
   },
 
   // Android only
-  readFileAssets(filepath: string, encodingOrOptions?: any): Promise<string> {
+  readFileAssets(filepath, encodingOrOptions) {
     if (!RNFSManager.readFileAssets) {
       throw new Error('readFileAssets is not available on this platform');
     }
@@ -246,19 +209,19 @@ var RNFS = {
   },
 
   // Android only
-  readFileRes(filename: string, encodingOrOptions?: any): Promise<string> {
+  readFileRes(filename, encodingOrOptions) {
     if (!RNFSManager.readFileRes) {
       throw new Error('readFileRes is not available on this platform');
     }
     return readFileGeneric(filename, encodingOrOptions, RNFSManager.readFileRes);
   },
 
-  hash(filepath: string, algorithm: string): Promise<string> {
+  hash(filepath, algorithm) {
     return RNFSManager.hash(normalizeFilePath(filepath), algorithm);
   },
 
   // Android only
-  copyFileAssets(filepath: string, destPath: string) {
+  copyFileAssets(filepath, destPath) {
     if (!RNFSManager.copyFileAssets) {
       throw new Error('copyFileAssets is not available on this platform');
     }
@@ -266,7 +229,7 @@ var RNFS = {
   },
 
   // Android only
-  copyFileRes(filename: string, destPath: string) {
+  copyFileRes(filename, destPath) {
     if (!RNFSManager.copyFileRes) {
       throw new Error('copyFileRes is not available on this platform');
     }
@@ -277,8 +240,8 @@ var RNFS = {
   // Copies fotos from asset-library (camera-roll) to a specific location
   // with a given width or height
   // @see: https://developer.apple.com/reference/photos/phimagemanager/1616964-requestimageforasset
-  copyAssetsFileIOS(imageUri: string, destPath: string, width: number, height: number,
-    scale: number = 1.0, compression: number = 1.0, resizeMode: string = 'contain'): Promise<string> {
+  copyAssetsFileIOS(imageUri, destPath, width, height,
+    scale = 1.0, compression = 1.0, resizeMode = 'contain') {
     return RNFSManager.copyAssetsFileIOS(imageUri, destPath, width, height, scale, compression, resizeMode);
   },
 
@@ -286,11 +249,11 @@ var RNFS = {
   // Copies fotos from asset-library (camera-roll) to a specific location
   // with a given width or height
   // @see: https://developer.apple.com/reference/photos/phimagemanager/1616964-requestimageforasset
-  copyAssetsVideoIOS(imageUri: string, destPath: string): Promise<string> {
+  copyAssetsVideoIOS(imageUri, destPath) {
     return RNFSManager.copyAssetsVideoIOS(imageUri, destPath);
   },
 
-  writeFile(filepath: string, contents: string, encodingOrOptions?: any): Promise<void> {
+  writeFile(filepath, contents, encodingOrOptions) {
     var b64;
 
     var options = {
@@ -321,11 +284,11 @@ var RNFS = {
     return RNFSManager.writeFile(normalizeFilePath(filepath), b64, options).then(() => void 0);
   },
 
-  writeUtf8(filepath: string, contents: string): Promise<string> {
+  writeUtf8(filepath, contents) {
     return RNFSManager.writeUtf8(normalizeFilePath(filepath), contents).then(() => void 0);
   },
 
-  appendFile(filepath: string, contents: string, encodingOrOptions?: any): Promise<void> {
+  appendFile(filepath, contents, encodingOrOptions) {
     var b64;
 
     var options = {
@@ -353,7 +316,7 @@ var RNFS = {
     return RNFSManager.appendFile(normalizeFilePath(filepath), b64);
   },
 
-  write(filepath: string, contents: string, position?: number, encodingOrOptions?: any): Promise<void> {
+  write(filepath, contents, position, encodingOrOptions) {
     var b64;
 
     var options = {
@@ -385,7 +348,7 @@ var RNFS = {
     return RNFSManager.write(normalizeFilePath(filepath), b64, position).then(() => void 0);
   },
 
-  touch(filepath: string, mtime?: Date, ctime?: Date): Promise<void> {
+  touch(filepath, mtime, ctime) {
     if (ctime && !(ctime instanceof Date)) throw new Error('touch: Invalid value for argument `ctime`');
     if (mtime && !(mtime instanceof Date)) throw new Error('touch: Invalid value for argument `mtime`');
     var ctimeTime = 0;
@@ -400,7 +363,7 @@ var RNFS = {
   },
 
   // not accurate on ios
-  canOpenFile(filepath: string, scheme?: string): Promise<void> {
+  canOpenFile(filepath, scheme) {
     const path = `${isIOS ? 'file://' : ''}${normalizeFilePath(filepath)}`
     return RNFSManager.canOpenFile(
       path,
@@ -408,7 +371,7 @@ var RNFS = {
     );
   },
 
-  openFile(filepath: string, scheme?: string): Promise<void> {
+  openFile(filepath, scheme) {
     const path = `${isIOS ? 'file://' : ''}${normalizeFilePath(filepath)}`
     return RNFSManager.openFile(
       path,
@@ -416,7 +379,7 @@ var RNFS = {
     );
   },
 
-  scanFile(path: string): Promise<ReadDirItem[]> {
+  scanFile(path) {
     return RNFSManager.scanFile(path);
   },
 
