@@ -40,8 +40,9 @@
     "react-native": ">=0.51.0 <1.0.0"
   },
   "files": [
-    "android",
-    "*.xcodeproj",
+    "android/build.gradle",
+    "android/src",
+    "RNFS.xcodeproj/project.pbxproj",
     "*.h",
     "*.m",
     "*.json",
