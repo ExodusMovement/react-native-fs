@@ -8,14 +8,26 @@
 
 var RNFSManager = require('react-native').NativeModules.RNFSManager;
 
-var base64 = require('base-64');
-var utf8 = require('utf8');
 var isIOS = require('react-native').Platform.OS === 'ios';
 
 var RNFSFileTypeRegular = RNFSManager.RNFSFileTypeRegular;
 var RNFSFileTypeDirectory = RNFSManager.RNFSFileTypeDirectory;
 
 var normalizeFilePath = (path) => (path.startsWith('file://') ? path.slice(7) : path);
+
+function encode(contents, encoding) {
+  if (encoding === 'utf8') return btoa(unescape(encodeURIComponent(contents)));
+  if (encoding === 'ascii') return btoa(contents);
+  if (encoding === 'base64') return contents;
+  throw new Error(`Invalid encoding type "${encoding}"`);
+}
+
+function decode(b64, encoding) {
+  if (encoding === 'utf8') return decodeURIComponent(escape(atob(b64)));
+  if (encoding === 'ascii') return atob(b64);
+  if (encoding === 'base64') return b64;
+  throw new Error(`Invalid encoding type "${encoding}"`);
+}
 
 /**
  * Generic function used by readFile and readFileAssets
@@ -33,21 +45,7 @@ function readFileGeneric(filepath, encodingOrOptions, command) {
     }
   }
 
-  return command(normalizeFilePath(filepath)).then((b64) => {
-    var contents;
-
-    if (options.encoding === 'utf8') {
-      contents = utf8.decode(base64.decode(b64));
-    } else if (options.encoding === 'ascii') {
-      contents = base64.decode(b64);
-    } else if (options.encoding === 'base64') {
-      contents = b64;
-    } else {
-      throw new Error('Invalid encoding type "' + String(options.encoding) + '"');
-    }
-
-    return contents;
-  });
+  return command(normalizeFilePath(filepath)).then((b64) => decode(b64, options.encoding));
 }
 
 /**
@@ -183,21 +181,7 @@ var RNFS = {
       }
     }
 
-    return RNFSManager.read(normalizeFilePath(filepath), length, position).then((b64) => {
-      var contents;
-
-      if (options.encoding === 'utf8') {
-        contents = utf8.decode(base64.decode(b64));
-      } else if (options.encoding === 'ascii') {
-        contents = base64.decode(b64);
-      } else if (options.encoding === 'base64') {
-        contents = b64;
-      } else {
-        throw new Error('Invalid encoding type "' + String(options.encoding) + '"');
-      }
-
-      return contents;
-    });
+    return RNFSManager.read(normalizeFilePath(filepath), length, position).then((b64) => decode(b64, options.encoding));
   },
 
   // Android only
@@ -254,8 +238,6 @@ var RNFS = {
   },
 
   writeFile(filepath, contents, encodingOrOptions) {
-    var b64;
-
     var options = {
       encoding: 'utf8'
     };
@@ -271,15 +253,7 @@ var RNFS = {
       }
     }
 
-    if (options.encoding === 'utf8') {
-      b64 = base64.encode(utf8.encode(contents));
-    } else if (options.encoding === 'ascii') {
-      b64 = base64.encode(contents);
-    } else if (options.encoding === 'base64') {
-      b64 = contents;
-    } else {
-      throw new Error('Invalid encoding type "' + options.encoding + '"');
-    }
+    const b64 = encode(contents, options.encoding);
 
     return RNFSManager.writeFile(normalizeFilePath(filepath), b64, options).then(() => void 0);
   },
@@ -289,8 +263,6 @@ var RNFS = {
   },
 
   appendFile(filepath, contents, encodingOrOptions) {
-    var b64;
-
     var options = {
       encoding: 'utf8'
     };
@@ -303,22 +275,12 @@ var RNFS = {
       }
     }
 
-    if (options.encoding === 'utf8') {
-      b64 = base64.encode(utf8.encode(contents));
-    } else if (options.encoding === 'ascii') {
-      b64 = base64.encode(contents);
-    } else if (options.encoding === 'base64') {
-      b64 = contents;
-    } else {
-      throw new Error('Invalid encoding type "' + options.encoding + '"');
-    }
+    const b64 = encode(contents, options.encoding);
 
     return RNFSManager.appendFile(normalizeFilePath(filepath), b64);
   },
 
   write(filepath, contents, position, encodingOrOptions) {
-    var b64;
-
     var options = {
       encoding: 'utf8'
     };
@@ -331,15 +293,7 @@ var RNFS = {
       }
     }
 
-    if (options.encoding === 'utf8') {
-      b64 = base64.encode(utf8.encode(contents));
-    } else if (options.encoding === 'ascii') {
-      b64 = base64.encode(contents);
-    } else if (options.encoding === 'base64') {
-      b64 = contents;
-    } else {
-      throw new Error('Invalid encoding type "' + options.encoding + '"');
-    }
+    const b64 = encode(contents, options.encoding);
 
     if (position === undefined) {
       position = -1;
